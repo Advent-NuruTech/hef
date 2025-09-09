@@ -134,8 +134,8 @@ export default function Gallery() {
   // Share function
   const share = async (it: Item) => {
     const shareData = {
-      title: it.title || "HEF Gallery",
-      text: it.description || "Check out this image from HEF Gallery!",
+      title: it.title || "KEF Gallery",
+      text: it.description || "Check out this image from KEF Gallery!",
       url: `${window.location.origin}/image/${it.id}`,
     };
 

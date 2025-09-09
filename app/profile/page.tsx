@@ -566,7 +566,7 @@ export default function ProfilePage() {
                 
                 {specialMessage && (
                   <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h3 className="font-semibold text-red-800 mb-2">HEF IMPACT TO ME AND MY SUCESS STORY</h3>
+                    <h3 className="font-semibold text-red-800 mb-2">KEF IMPACT TO ME AND MY SUCESS STORY</h3>
                     <p className="text-blue-700">
                       {showFullMessage ? specialMessage : truncateMessage(specialMessage)}
                       {specialMessage.split(' ').length > 20 && (

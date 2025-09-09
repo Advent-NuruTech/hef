@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
-  title: "HEF Gallery",
-  description: "Gallery system for HEF",
+  title: "KEF Gallery",
+  description: "Gallery system for KEF",
 };
 
 export default function RootLayout({
