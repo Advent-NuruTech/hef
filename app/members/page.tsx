@@ -6,8 +6,9 @@ import { collection, getDocs, query } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 
-// Define User interface
+// Define Member interface
 interface Member {
   id: string;
   displayName?: string;
@@ -16,41 +17,32 @@ interface Member {
   bio?: string;
 }
 
+// KEF branded quotes with proper typographic quotes
 const quotes = [
-  "The way to get started is to quit talking and begin doing. - Walt Disney",
-  "Your time is limited, so don't waste it living someone else's life. - Steve Jobs",
-  "If life were predictable it would cease to be life, and be without flavor. - Eleanor Roosevelt",
-  "Life is what happens when you're busy making other plans. - John Lennon",
-  "Spread love everywhere you go. - Mother Teresa",
-  "When you reach the end of your rope, tie a knot in it and hang on. - Franklin D. Roosevelt",
-  "Always remember that you are absolutely unique. Just like everyone else. - Margaret Mead",
-  "Don't judge each day by the harvest you reap but by the seeds that you plant. - Robert Louis Stevenson",
-  "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-  "Whoever is happy will make others happy too. - Anne Frank"
+  '“KEF empowers every member to grow and connect.”',
+  '“Your journey at KEF is your path to excellence.”',
+  '“Collaboration is the KEF way to success.”',
+  '“Share knowledge, inspire others, and thrive at KEF.”',
+  '“KEF transforms ideas into action for the community.”',
+  '“Every member at KEF is unique, valued, and supported.”'
 ];
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
-  const [currentQuote, setCurrentQuote] = useState("");
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Protect page: redirect if not logged in
   useEffect(() => {
     if (!auth.currentUser) {
-      router.push("/auth"); 
-      return;
+      router.push("/auth");
     }
+  }, [router]);
 
-    // Rotating quotes
-    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    setCurrentQuote(randomQuote);
-
-    const quoteInterval = setInterval(() => {
-      const newQuote = quotes[Math.floor(Math.random() * quotes.length)];
-      setCurrentQuote(newQuote);
-    }, 10000);
-
+  // Fetch members from Firestore
+  useEffect(() => {
     const fetchMembers = async () => {
       try {
         const q = query(collection(db, "users"));
@@ -70,9 +62,16 @@ export default function MembersPage() {
     };
 
     fetchMembers();
+  }, []);
 
-    return () => clearInterval(quoteInterval);
-  }, [router]);
+  // Quote rotation effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = members.filter((m) =>
     m.displayName?.toLowerCase().includes(search.toLowerCase())
@@ -83,31 +82,47 @@ export default function MembersPage() {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-blue-700 mb-2">
-          Connect & Grow Together
+          Connect & Grow with KEF
         </h1>
         <p className="text-lg text-gray-700 mb-4">
-          Discover how our community has transformed lives and find your next connection
+          Explore our community and discover your next collaboration.
         </p>
-        
-        {/* Rotating Quote */}
-        <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 mb-6">
-          <p className="text-blue-800 italic text-center">{`"{currentQuote}"`}</p>
+      </div>
+
+      {/* Featured Quote */}
+      <section className="py-12 md:py-20 bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="max-w-4xl mx-auto px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentQuoteIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <blockquote className="text-1xl md:text-2xl italic mb-6">
+                {quotes[currentQuoteIndex]}
+              </blockquote>
+              <cite className="text-lg block">KEF Community</cite>
+            </motion.div>
+          </AnimatePresence>
         </div>
-        
+
         {/* Statistics */}
-        <div className="flex justify-center space-x-6 mb-6">
+        <div className="flex justify-center space-x-6 mb-6 mt-8">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{members.length}</div>
             <div className="text-sm text-gray-600">Total Members</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
-              {members.filter(m => m.profession).length}
+              {members.filter((m) => m.profession).length}
             </div>
             <div className="text-sm text-gray-600">Professionals</div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Search Bar */}
       <div className="mb-6">
@@ -142,7 +157,7 @@ export default function MembersPage() {
                     className="w-15 h-15 rounded-full object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <Link 
+                    <Link
                       href={`/users/${member.id}`}
                       className="font-semibold text-lg hover:text-blue-600 transition-colors truncate block"
                     >
@@ -152,21 +167,19 @@ export default function MembersPage() {
                       {member.profession || "Community Member"}
                     </p>
                     {member.bio && (
-                      <p className="text-sm text-gray-700 mt-1 line-clamp-2">
-                        {member.bio}
-                      </p>
+                      <p className="text-sm text-gray-700 mt-1 line-clamp-2">{member.bio}</p>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center mt-4">
-                  <Link 
+                  <Link
                     href={`/users/${member.id}`}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     View Profile
                   </Link>
-                  
+
                   {member.id !== auth.currentUser?.uid && (
                     <button
                       onClick={() => router.push(`/messages/${member.id}`)}

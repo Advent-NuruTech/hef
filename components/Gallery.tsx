@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { db, auth } from "@/lib/firebase";
+import ShareButtons from '@/components/ShareButtons';
 import {
   collection,
   onSnapshot,
@@ -131,33 +132,7 @@ export default function Gallery() {
     });
   };
 
-  // Share function
-  const share = async (it: Item) => {
-    const shareData = {
-      title: it.title || "KEF Gallery",
-      text: it.description || "Check out this image from KEF Gallery!",
-      url: `${window.location.origin}/image/${it.id}`,
-    };
-
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [] })) {
-        const response = await fetch(it.url);
-        const blob = await response.blob();
-        const file = new File([blob], "hef-image.jpg", { type: blob.type });
-        await navigator.share({ ...shareData, files: [file] });
-      } else if (navigator.share) {
-        await navigator.share(shareData);
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareData.url);
-        alert("Link copied to clipboard!");
-      } else {
-        prompt("Copy this link:", shareData.url);
-      }
-    } catch (err) {
-      console.error("Share failed", err);
-      alert("Sharing not supported on this device.");
-    }
-  };
+  
 
   // Get latest 3 items for hero section
   const heroItems = items.slice(0, 3);
@@ -330,13 +305,10 @@ export default function Gallery() {
                     <span>{commentCounts[it.id] || 0}</span>
                   </Link>
 
-                  <button 
-                    onClick={() => share(it)} 
-                    className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-                  >
+                  <ShareButtons item={it} className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
                     <span className="text-lg">🔗</span>
                     <span>Share</span>
-                  </button>
+                  </ShareButtons>
 
                   {auth.currentUser?.uid === it.userId && (
                     <Link
@@ -416,13 +388,12 @@ export default function Gallery() {
                     <span>{selected ? commentCounts[selected.id] || 0 : 0} Comments</span>
                   </Link>
                   
-                  <button 
-                    onClick={() => selected && share(selected)} 
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="text-xl">🔗</span>
-                    <span>Share</span>
-                  </button>
+                  {selected && (
+                    <ShareButtons item={selected} className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                      <span className="text-xl">🔗</span>
+                      <span>Share</span>
+                    </ShareButtons>
+                  )}
                 </div>
               </div>
             </div>
