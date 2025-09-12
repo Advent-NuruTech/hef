@@ -6,7 +6,7 @@ import { logout } from "@/lib/auth";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaUsers, FaEnvelope } from "react-icons/fa"; 
+import { FaUsers, FaEnvelope } from "react-icons/fa";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where, doc, getDoc } from "firebase/firestore";
 
@@ -16,10 +16,8 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // 🔔 Unread messages count
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // ✅ Real user data from Firestore
   const [userProfile, setUserProfile] = useState<{ displayName: string; photoURL: string }>({
     displayName: "Anonymous",
     photoURL: "/default-avatar.jpg",
@@ -31,7 +29,6 @@ export default function Navbar() {
     router.push("/auth");
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -42,7 +39,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch real user info from Firestore
   useEffect(() => {
     if (!user) return;
     const fetchUser = async () => {
@@ -58,7 +54,6 @@ export default function Navbar() {
     fetchUser();
   }, [user]);
 
-  // Listen for unread messages
   useEffect(() => {
     if (!user) return;
     const q = query(
@@ -75,8 +70,8 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Left: Logo */}
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-blue-600">
+        {/* Left: Logo + KEF GALLERY */}
+        <Link href="/" className="flex items-center gap-3 text-xl font-bold text-blue-600">
           <Image
             src="/assets/heflogoo.jpg"
             alt="Site Logo"
@@ -84,6 +79,7 @@ export default function Navbar() {
             height={120}
             className="w-14 h-14 object-contain"
           />
+          <span className="text-gray-800 font-bold text-lg">KEF GALLERY</span>
         </Link>
 
         {/* Right: Links */}
@@ -105,6 +101,11 @@ export default function Navbar() {
 
               <Link href="/links" className="text-sm font-medium hover:text-blue-600">
                 Links
+              </Link>
+
+              {/* 💰 Contribution Link */}
+              <Link href="/contribution" className="text-sm font-medium hover:text-green-600">
+                Contribution
               </Link>
 
               {/* 👥 Members Icon */}
