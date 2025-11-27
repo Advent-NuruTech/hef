@@ -99,7 +99,7 @@ export default function AuthForm() {
         if (!setupSnap.exists()) {
           router.replace("/setup");
         } else {
-          router.replace("/members");
+          router.replace("/");
         }
       }
 
