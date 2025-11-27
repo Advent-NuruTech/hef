@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User } from "firebase/auth";
 import { 
+  FaHome,
   FaBookOpen, 
   FaWater, 
   FaUpload, 
@@ -55,16 +56,17 @@ export default function Sidebar({
 
   // Navigation items
   const navItems = [
-    { href: "/beliefs", label: "Fundamental Principles", icon: FaBookOpen, color: "text-green-600" },
-    { href: "/vows", label: "Baptismal Vows 1874", icon: FaWater, color: "text-green-600" },
-    { href: "/upload", label: "Post", icon: FaUpload, color: "text-gray-700" },
-    { href: "/links", label: "Links", icon: FaLink, color: "text-gray-700" },
-    { href: "/contribution", label: "Contribution", icon: FaDonate, color: "text-green-600" },
-    { href: "/members", label: "Members", icon: FaUsers, color: "text-gray-700" },
-    { href: "/events", label: "Events", icon: FaCalendarAlt, color: "text-gray-700" },
-    { href: "/messages", label: "Messages", icon: FaEnvelope, color: "text-gray-700", badge: unreadCount },
-      { href: "/links", label: "Links", icon: FaLink, color: "text-gray-700" }
-  ];
+   { href: "/", label: "Home", icon: FaHome, color: "text-green-600" }, // ← Home link added
+  { href: "/beliefs", label: "Fundamental Principles", icon: FaBookOpen, color: "text-green-600" },
+  { href: "/vows", label: "Baptismal Vows 1874", icon: FaWater, color: "text-green-600" },
+  { href: "/upload", label: "Post", icon: FaUpload, color: "text-gray-700" },
+  { href: "/links", label: "Links", icon: FaLink, color: "text-gray-700" },
+  { href: "/contribution", label: "Contribution", icon: FaDonate, color: "text-green-600" },
+  { href: "/members", label: "Members", icon: FaUsers, color: "text-gray-700" },
+  { href: "/events", label: "Events", icon: FaCalendarAlt, color: "text-gray-700" },
+  { href: "/messages", label: "Messages", icon: FaEnvelope, color: "text-gray-700", badge: unreadCount },
+  { href: "/constitution", label: "Our Constitution", icon: FaBookOpen, color: "text-green-600" }
+];
 
   const handleLinkClick = () => {
     onNavigate();
