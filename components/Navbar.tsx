@@ -6,22 +6,21 @@ import { logout } from "@/lib/auth";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { FaUsers, FaEnvelope, FaBars, FaTimes } from "react-icons/fa";
+import { FaUsers, FaEnvelope, FaBars, FaTimes, FaUpload, FaLink, FaHandHoldingHeart, FaUser } from "react-icons/fa";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where, doc, getDoc } from "firebase/firestore";
+import Sidebar from "./Sidebar";
 
 export default function Navbar() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false); // dropdown for avatar
-  const [mobileMenu, setMobileMenu] = useState(false); // mobile nav toggle
-  const [loading, setLoading] = useState(false); // spinner state
+  const [sidebarOpen, setSidebarOpen] = useState(false); // sidebar state
+  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   const [unreadCount, setUnreadCount] = useState(0);
-
   const [userProfile, setUserProfile] = useState<{ displayName: string; photoURL: string }>({
     displayName: "Anonymous",
     photoURL: "/default-avatar.jpg",
@@ -31,25 +30,34 @@ export default function Navbar() {
     setLoading(true);
     await logout();
     setOpen(false);
-    setMobileMenu(false);
+    setSidebarOpen(false);
     setTimeout(() => {
+      setLoading(false);
       router.push("/auth");
     }, 1500);
   };
 
-  // Close dropdowns when clicking outside
+  // Auto-dismiss loading spinner when page loads or after timeout
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 3000); // Auto-dismiss after 3 seconds max
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  // Dismiss loading when route changes (page loads)
+  useEffect(() => {
+    setLoading(false);
+  }, [pathname]);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      // Close avatar dropdown
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
-      }
-      
-      // Close mobile menu when clicking outside
-      if (mobileMenuRef.current && 
-          !mobileMenuRef.current.contains(event.target as Node) &&
-          !(event.target as Element).closest('.mobile-menu-button')) {
-        setMobileMenu(false);
       }
     }
     
@@ -60,22 +68,7 @@ export default function Navbar() {
   // Close menus when route changes
   useEffect(() => {
     setOpen(false);
-    setMobileMenu(false);
   }, [pathname]);
-
-  // Close mobile menu when tapping/clicking anywhere (for mobile)
-  useEffect(() => {
-    const handleDocumentClick = () => {
-      if (mobileMenu) {
-        setMobileMenu(false);
-      }
-    };
-    
-    if (mobileMenu) {
-      document.addEventListener('click', handleDocumentClick);
-      return () => document.removeEventListener('click', handleDocumentClick);
-    }
-  }, [mobileMenu]);
 
   // Fetch user profile
   useEffect(() => {
@@ -107,255 +100,180 @@ export default function Navbar() {
     return () => unsub();
   }, [user]);
 
-  // Dismiss spinner on click anywhere
-  useEffect(() => {
-    if (!loading) return;
-    const dismiss = () => setLoading(false);
-    document.addEventListener("click", dismiss);
-    return () => document.removeEventListener("click", dismiss);
-  }, [loading]);
+  // Improved navigation handler
+  const handleNavigation = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    setLoading(true);
+  };
 
-  // Nav links (desktop & mobile reuse)
-  const navLinks = (
-    <>
-      <Link 
-        href="/upload" 
-        className="text-sm font-medium hover:text-blue-600"
-        onClick={() => setLoading(true)}
-      >
-        Upload
-      </Link>
-      <Link 
-        href="/links" 
-        className="text-sm font-medium hover:text-blue-600"
-        onClick={() => setLoading(true)}
-      >
-        Links
-      </Link>
-      <Link 
-        href="/contribution" 
-        className="text-sm font-medium hover:text-green-600"
-        onClick={() => setLoading(true)}
-      >
-        Contribution
-      </Link>
-      <Link 
-        href="/members" 
-        className="relative"
-        onClick={() => setLoading(true)}
-      >
-        <FaUsers className="text-xl text-gray-600 hover:text-blue-600 cursor-pointer" />
-      </Link>
-      <Link 
-        href="/messages" 
-        className="relative"
-        onClick={() => setLoading(true)}
-      >
-        <FaEnvelope className="text-xl text-gray-600 hover:text-blue-600 cursor-pointer" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
-            {unreadCount}
-          </span>
-        )}
-      </Link>
-    </>
-  );
+  // Navigation items with icons
+  const navItems = [
+    { href: "/upload", label: "Upload", icon: FaUpload, color: "text-gray-700" },
+    { href: "/links", label: "Links", icon: FaLink, color: "text-gray-700" },
+    { href: "/contribution", label: "Contribution", icon: FaHandHoldingHeart, color: "text-green-600" },
+  ];
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Logo + Title */}
-        <Link href="/" className="flex items-center gap-3 text-xl font-bold text-blue-600 flex-shrink-0">
-          <Image
-            src="/assets/heflogoo.jpg"
-            alt="Site Logo"
-            width={40}
-            height={40}
-            className="w-10 h-10 object-contain"
-          />
-          <span className="text-black -800 font-bold text-lg">KEF GALLERY</span>
-        </Link>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-4">
-          {!user && (
-            <Link
-              href="/auth"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={() => setLoading(true)}
+    <>
+      <nav className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo + Title */}
+            <Link 
+              href="/" 
+              className="flex items-center gap-3 group flex-shrink-0"
+              onClick={handleNavigation}
             >
-              Login
-            </Link>
-          )}
-
-          {user && (
-            <div ref={dropdownRef} className="relative flex items-center gap-4">
-              {navLinks}
-
-              {/* Avatar */}
-              <button onClick={() => setOpen((p) => !p)}>
+              <div className="relative w-10 h-10">
                 <Image
-                  src={userProfile.photoURL}
-                  alt={userProfile.displayName}
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 rounded-full object-cover border cursor-pointer"
+                  src="/assets/heflogoo.jpg"
+                  alt="Site Logo"
+                  fill
+                  className="object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-              </button>
+              </div>
+              <span className="text-gray-900 font-bold text-xl tracking-tight">YOUNG EVANGELIST</span>
+            </Link>
 
-              {/* Dropdown */}
-              {open && (
-                <div className="absolute right-0 mt-12 w-40 bg-white border rounded shadow-lg z-50">
-                  <Link
-                    href="/profile"
-                    onClick={() => {
-                      setOpen(false);
-                      setLoading(true);
-                    }}
-                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-6">
+              {!user ? (
+                <Link
+                  href="/auth"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                  onClick={handleNavigation}
+                >
+                  Login
+                </Link>
+              ) : (
+                <div ref={dropdownRef} className="flex items-center gap-6">
+                  {/* Navigation Links */}
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium ${item.color} hover:scale-105`}
+                      onClick={handleNavigation}
+                    >
+                      <item.icon className="text-lg" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+
+                  {/* Members Link */}
+                  <Link 
+                    href="/members" 
+                    className="p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:scale-105"
+                    onClick={handleNavigation}
                   >
-                    My Profile
+                    <FaUsers className="text-xl text-gray-600 hover:text-blue-600 transition-colors" />
                   </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+
+                  {/* Messages Link with Badge */}
+                  <Link 
+                    href="/messages" 
+                    className="relative p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:scale-105"
+                    onClick={handleNavigation}
                   >
-                    Logout
-                  </button>
+                    <FaEnvelope className="text-xl text-gray-600 hover:text-blue-600 transition-colors" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] rounded-full flex items-center justify-center animate-pulse">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* User Avatar */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setOpen(!open)}
+                      className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-50 transition-all duration-200"
+                    >
+                      <div className="relative w-10 h-10">
+                        <Image
+                          src={userProfile.photoURL}
+                          alt={userProfile.displayName}
+                          fill
+                          className="rounded-full object-cover border-2 border-gray-200 hover:border-blue-500 transition-colors"
+                        />
+                      </div>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {open && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <p className="font-semibold text-gray-900 truncate">{userProfile.displayName}</p>
+                          <p className="text-sm text-gray-500">Welcome back!</p>
+                        </div>
+                        
+                        <Link
+                          href="/profile"
+                          onClick={() => {
+                            setOpen(false);
+                            handleNavigation();
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-700"
+                        >
+                          <FaUser className="text-gray-400" />
+                          <span>My Profile</span>
+                        </Link>
+                        
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-red-600 font-medium"
+                        >
+                          <FaTimes className="text-red-500" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center gap-2">
-          {user && (
-            <Link 
-              href="/messages" 
-              className="relative"
-              onClick={() => setLoading(true)}
-            >
-              <FaEnvelope className="text-xl text-gray-600" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </Link>
-          )}
-          <button 
-            className="mobile-menu-button p-2 rounded-md text-gray-700"
-            onClick={() => setMobileMenu(!mobileMenu)}
-          >
-            {mobileMenu ? (
-              <FaTimes className="text-2xl" />
-            ) : (
-              <FaBars className="text-2xl" />
-            )}
-          </button>
-        </div>
-      </div>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden flex items-center gap-3">
+              {user && (
+                <>
+                
 
-      {/* Mobile Dropdown Menu */}
-      {mobileMenu && (
-        <div ref={mobileMenuRef} className="md:hidden bg-white border-t shadow-md px-4 py-3">
-          <div className="flex flex-col gap-4">
-            {!user && (
-              <Link
-                href="/auth"
-                onClick={() => {
-                  setMobileMenu(false);
-                  setLoading(true);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
-              >
-                Login
-              </Link>
-            )}
-
-            {user && (
-              <>
-                <div className="flex items-center gap-3 pb-3 border-b">
-                  <Image
-                    src={userProfile.photoURL}
-                    alt={userProfile.displayName}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover border"
-                  />
-                  <div>
-                    <p className="font-medium">{userProfile.displayName}</p>
-                    <p className="text-sm text-gray-600">Welcome back!</p>
+                  {/* User Avatar - Mobile */}
+                  <div className="relative w-8 h-8">
+                    <Image
+                      src={userProfile.photoURL}
+                      alt={userProfile.displayName}
+                      fill
+                      className="rounded-full object-cover border border-gray-300"
+                    />
                   </div>
-                </div>
-                
-                <Link 
-                  href="/upload" 
-                  className="py-2 px-2 hover:bg-gray-100 rounded"
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setLoading(true);
-                  }}
-                >
-                  Upload
-                </Link>
-                
-                <Link 
-                  href="/links" 
-                  className="py-2 px-2 hover:bg-gray-100 rounded"
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setLoading(true);
-                  }}
-                >
-                  Links
-                </Link>
-                
-                <Link 
-                  href="/contribution" 
-                  className="py-2 px-2 hover:bg-gray-100 rounded text-green-600"
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setLoading(true);
-                  }}
-                >
-                  Contribution
-                </Link>
-                
-                <Link 
-                  href="/members" 
-                  className="py-2 px-2 hover:bg-gray-100 rounded flex items-center gap-2"
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setLoading(true);
-                  }}
-                >
-                  <FaUsers className="text-gray-600" /> Members
-                </Link>
-                
-                <Link 
-                  href="/profile" 
-                  className="py-2 px-2 hover:bg-gray-100 rounded"
-                  onClick={() => {
-                    setMobileMenu(false);
-                    setLoading(true);
-                  }}
-                >
-                  My Profile
-                </Link>
-                
-                <button
-                  onClick={handleLogout}
-                  className="py-2 px-2 text-left text-red-600 hover:bg-gray-100 rounded mt-2"
-                >
-                  Logout
-                </button>
-              </>
-            )}
+                </>
+              )}
+
+              {/* Sidebar Toggle Button */}
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+              >
+                <FaBars className="text-xl text-gray-700" />
+              </button>
+            </div>
           </div>
         </div>
-      )}
-    </nav>
+      </nav>
+
+     
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        user={user}
+        userProfile={userProfile}
+        unreadCount={unreadCount}
+        onNavigate={handleNavigation}
+        onLogout={handleLogout}
+      />
+    </>
   );
 }

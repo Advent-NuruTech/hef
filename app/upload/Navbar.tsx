@@ -11,7 +11,7 @@ export default function Navbar() {
     <header className="py-6 px-4 border-b bg-white">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
-          <Link href="/">KEF Gallery</Link>
+          <Link href="/">YOUNG EVANGELISTS MINISTRY</Link>
         </h1>
         <nav className="space-x-4 flex items-center">
           <Link href="/" className="text-sm">Gallery</Link>

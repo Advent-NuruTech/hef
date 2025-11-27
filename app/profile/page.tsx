@@ -286,7 +286,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                   <input
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g. Software Engineer"
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">About Me</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">my simple testimony</label>
                   <textarea
                     ref={bioRef}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -450,7 +450,7 @@ export default function ProfilePage() {
             {/* Links Section */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                <FaLink className="text-blue-500" /> My Links
+                <FaLink className="text-blue-500" /> My relevant Links
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -536,7 +536,7 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="mt-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-3">About Me</h2>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-3">My Simple Testimony</h2>
                   <div className="text-gray-600">
                     {showReadMore && !showFullBio ? (
                       <>
@@ -566,7 +566,7 @@ export default function ProfilePage() {
                 
                 {specialMessage && (
                   <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h3 className="font-semibold text-red-800 mb-2">KEF IMPACT TO ME AND MY SUCESS STORY</h3>
+                    <h3 className="font-semibold text-red-800 mb-2">gospel impact to me and my success story</h3>
                     <p className="text-blue-700">
                       {showFullMessage ? specialMessage : truncateMessage(specialMessage)}
                       {specialMessage.split(' ').length > 20 && (

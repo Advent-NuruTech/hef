@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { db, auth } from "@/lib/firebase";
+import Likes from "@/components/Likes";
+import Comments from "@/components/Comments";
 import ShareButtons from '@/components/ShareButtons';
 import {
   collection,
@@ -14,7 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { Dialog } from "@headlessui/react";
-import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface Item {
   id: string;
@@ -47,7 +49,6 @@ export default function Gallery() {
   const [selected, setSelected] = useState<Item | null>(null);
   const [expandedDesc, setExpandedDesc] = useState<{ [key: string]: boolean }>({});
   const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
-  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   // Load gallery images
   useEffect(() => {
@@ -71,7 +72,6 @@ export default function Gallery() {
           return {
             id: d.id,
             ...data,
-            // Ensure URL has a fallback value
             url: data.url || "/placeholder-image.jpg",
             userName,
             userPhotoURL: userPhotoURL || "/default-avatar.png",
@@ -103,25 +103,6 @@ export default function Gallery() {
     return () => unsubscribers.forEach((u) => u());
   }, [items]);
 
-  // Auto-rotate hero images
-  useEffect(() => {
-    if (items.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentHeroIndex((prev) => (prev + 1) % Math.min(3, items.length));
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [items.length]);
-
-  const nextHero = useCallback(() => {
-    setCurrentHeroIndex((prev) => (prev + 1) % Math.min(3, items.length));
-  }, [items.length]);
-
-  const prevHero = useCallback(() => {
-    setCurrentHeroIndex((prev) => (prev - 1 + Math.min(3, items.length)) % Math.min(3, items.length));
-  }, [items.length]);
-
   // Like function
   const like = async (id: string) => {
     if (!auth.currentUser) return alert("Login to like");
@@ -132,83 +113,12 @@ export default function Gallery() {
     });
   };
 
-  
-
   // Get latest 3 items for hero section
   const heroItems = items.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      {/* Hero Section */}
-      {heroItems.length > 0 && (
-        <section className="relative h-96 w-full overflow-hidden rounded-xl shadow-lg mb-8">
-          {heroItems.map((item, index) => (
-            <div
-              key={item.id}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                index === currentHeroIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
-            >
-              <img
-                src={item.url || "/placeholder.png"} // ✅ fallback
-                alt={item.title || "Hero image"}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-end">
-                <div className="p-6 text-white w-full">
-                  <div className="flex items-center mb-3">
-                    <img
-                      src={item.userPhotoURL || "/default-avatar.png"}
-                      alt={item.userName || "Anonymous"}
-                      className="w-8 h-8 rounded-full object-cover mr-2"
-                    />
-                    <span className="font-medium">{item.userName || "Anonymous"}</span>
-                  </div>
-                  <h2 className="text-2xl font-bold mb-2">{item.title}</h2>
-                  <p className="line-clamp-2">{item.description}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          {/* Navigation arrows */}
-          {heroItems.length > 1 && (
-            <>
-              <button
-                onClick={prevHero}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-20"
-                aria-label="Previous image"
-              >
-                <ChevronLeftIcon className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextHero}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-20"
-                aria-label="Next image"
-              >
-                <ChevronRightIcon className="w-6 h-6" />
-              </button>
-            </>
-          )}
-          
-          {/* Indicators */}
-          {heroItems.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-              {heroItems.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentHeroIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentHeroIndex ? 'bg-white' : 'bg-white bg-opacity-50'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
+     
       {/* Gallery Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((it) => {
@@ -289,23 +199,23 @@ export default function Gallery() {
 
                 {/* Interaction Buttons */}
                 <div className="mt-auto pt-3 flex items-center justify-between text-sm border-t border-gray-100">
-                  <button 
-                    onClick={() => like(it.id)} 
+                  <Likes 
+                    itemId={it.id} 
+                    likes={it.likes} 
+                    onLike={like}
+                    className="flex items-center gap-1"
+                  />
+
+                  <Comments 
+                    itemId={it.id} 
+                    commentCount={commentCounts[it.id] || 0}
+                    className="flex items-center gap-1"
+                  />
+
+                  <ShareButtons 
+                    item={it} 
                     className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
                   >
-                    <span className="text-lg">👍</span>
-                    <span>{it.likes?.length || 0}</span>
-                  </button>
-
-                  <Link
-                    href={`/image/${it.id}`}
-                    className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors"
-                  >
-                    <span className="text-lg">💬</span>
-                    <span>{commentCounts[it.id] || 0}</span>
-                  </Link>
-
-                  <ShareButtons item={it} className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
                     <span className="text-lg">🔗</span>
                     <span>Share</span>
                   </ShareButtons>
@@ -326,7 +236,7 @@ export default function Gallery() {
         })}
       </div>
 
-      {/* Full-screen Image Viewer - Now scrollable */}
+      {/* Full-screen Image Viewer */}
       <Dialog
         open={!!selected}
         onClose={() => setSelected(null)}
@@ -344,20 +254,24 @@ export default function Gallery() {
             
             <div className="bg-white rounded-xl overflow-hidden">
               <div className="relative h-96 md:h-[70vh]">
-                <img
+                <Image
                   src={selected?.url || "/placeholder-image.jpg"}
                   alt={selected?.title || "full"}
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
                 />
               </div>
               
               <div className="p-6 max-h-96 overflow-y-auto">
                 <div className="flex items-center mb-4">
-                  <img
-                    src={selected?.userPhotoURL || "/default-avatar.png"}
-                    alt={selected?.userName || "Anonymous"}
-                    className="w-12 h-12 rounded-full object-cover mr-3"
-                  />
+                  <div className="relative w-12 h-12 mr-3">
+                    <Image
+                      src={selected?.userPhotoURL || "/default-avatar.png"}
+                      alt={selected?.userName || "Anonymous"}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
                   <div>
                     <h3 className="font-semibold text-lg">{selected?.userName || "Anonymous"}</h3>
                     {selected?.createdAt && (
@@ -372,24 +286,24 @@ export default function Gallery() {
                 <p className="text-gray-700 mb-4">{selected?.description}</p>
                 
                 <div className="flex items-center gap-6 pt-4 border-t border-gray-200">
-                  <button 
-                    onClick={() => selected && like(selected.id)} 
+                  <Likes 
+                    itemId={selected?.id || ""} 
+                    likes={selected?.likes} 
+                    onLike={like}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="text-xl">👍</span>
-                    <span>{selected?.likes?.length || 0} Likes</span>
-                  </button>
+                  />
                   
-                  <Link
-                    href={`/image/${selected?.id}`}
+                  <Comments 
+                    itemId={selected?.id || ""} 
+                    commentCount={selected ? commentCounts[selected.id] || 0 : 0}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="text-xl">💬</span>
-                    <span>{selected ? commentCounts[selected.id] || 0 : 0} Comments</span>
-                  </Link>
+                  />
                   
                   {selected && (
-                    <ShareButtons item={selected} className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <ShareButtons 
+                      item={selected} 
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
                       <span className="text-xl">🔗</span>
                       <span>Share</span>
                     </ShareButtons>

@@ -22,8 +22,8 @@ interface ShareButtonsProps {
 export default function ShareButtons({ item, className, children }: ShareButtonsProps) {
   const share = async () => {
     const shareData = {
-      title: item.title || "KEF Gallery",
-      text: item.description || "Check out this image from KEF Gallery!",
+      title: item.title || "YOUNG EVANGELISTSMINISTRY",
+      text: item.description || "Check out this image from YOUNG EVANGELISTS MINISTRY!",
       url: `${window.location.origin}/image/${item.id}`,
     };
 

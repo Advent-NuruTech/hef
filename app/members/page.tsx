@@ -17,14 +17,14 @@ interface Member {
   bio?: string;
 }
 
-// KEF branded quotes with proper typographic quotes
+// Young Evangelists Ministry / Present Truth Ministry quotes
 const quotes = [
-  '“KEF empowers every member to grow and connect.”',
-  '“Your journey at KEF is your path to excellence.”',
-  '“Collaboration is the KEF way to success.”',
-  '“Share knowledge, inspire others, and thrive at KEF.”',
-  '“KEF transforms ideas into action for the community.”',
-  '“Every member at KEF is unique, valued, and supported.”'
+  '“Young Evangelists Ministry empowers every member to proclaim the Present Truth.”',
+  '“Your journey with Young Evangelists Ministry is a path of faith, truth, and service.”',
+  '“Collaboration and ministry work are at the heart of the Present Truth Ministry.”',
+  '“Share the everlasting gospel, inspire others, and grow in the Primitive Adventist faith.”',
+  '“Present Truth Ministry transforms lives through dedication and service to the Lord.”',
+  '“Every member is valued and called to participate in the mission of Young Evangelists Ministry.”'
 ];
 
 export default function MembersPage() {
@@ -79,14 +79,16 @@ export default function MembersPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-700 mb-2">
-          Connect & Grow with KEF
-        </h1>
-        <p className="text-lg text-gray-700 mb-4">
-          Explore our community and discover your next collaboration.
-        </p>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search members by name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
       </div>
 
       {/* Featured Quote */}
@@ -104,36 +106,13 @@ export default function MembersPage() {
               <blockquote className="text-1xl md:text-2xl italic mb-6">
                 {quotes[currentQuoteIndex]}
               </blockquote>
-              <cite className="text-lg block">KEF Community</cite>
+              <cite className="text-lg block">
+                YOUNG EVANGELISTS MINISTRY — PRESENT TRUTH MINISTRY
+              </cite>
             </motion.div>
           </AnimatePresence>
         </div>
-
-        {/* Statistics */}
-        <div className="flex justify-center space-x-6 mb-6 mt-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{members.length}</div>
-            <div className="text-sm text-gray-600">Total Members</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {members.filter((m) => m.profession).length}
-            </div>
-            <div className="text-sm text-gray-600">Professionals</div>
-          </div>
-        </div>
       </section>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search members by name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
 
       {/* Members Grid */}
       {isLoading ? (
@@ -164,7 +143,7 @@ export default function MembersPage() {
                       {member.displayName}
                     </Link>
                     <p className="text-sm text-gray-600 truncate">
-                      {member.profession || "Community Member"}
+                      {member.profession || "Ministry Member"}
                     </p>
                     {member.bio && (
                       <p className="text-sm text-gray-700 mt-1 line-clamp-2">{member.bio}</p>
