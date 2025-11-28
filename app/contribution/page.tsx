@@ -3,8 +3,8 @@
 import React from "react";
 
 export default function ContributionPage() {
-  const paybillNumber = "247247"; 
-  const accountNumber = "0757325011"; 
+  const paybillNumber = "522522"; 
+  const accountNumber = "1332925359"; 
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4 transition-colors duration-300">
