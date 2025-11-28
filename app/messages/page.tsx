@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { db, auth } from "@/lib/firebase";
 import {
@@ -9,8 +10,8 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  Timestamp,
 } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,7 +53,6 @@ export default function MessagesPage() {
       email: user.email || "",
     });
 
-    // Fetch conversations where the current user is a participant
     const q = query(
       collection(db, "messages"),
       where("participants", "array-contains", user.uid),
@@ -75,7 +75,6 @@ export default function MessagesPage() {
         if (!otherUserId) continue;
 
         if (!conversationsMap.has(otherUserId)) {
-          // Fetch the other user's profile
           const otherUserDoc = await getDoc(doc(db, "users", otherUserId));
           let otherUser: User = {
             uid: otherUserId,
@@ -99,11 +98,10 @@ export default function MessagesPage() {
             participants: data.participants,
             lastMessage: data.text,
             lastMessageTime: data.createdAt || null,
-            unreadCount: 0, // Placeholder for unread count
+            unreadCount: 0,
             otherUser,
           });
         } else {
-          // Update if this is a newer message
           const existing = conversationsMap.get(otherUserId)!;
           if (
             existing.lastMessageTime &&
@@ -137,23 +135,25 @@ export default function MessagesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
-        <h1 className="text-xl font-semibold">Messages</h1>
+      <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white dark:bg-gray-800">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Messages
+        </h1>
       </div>
 
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
             <p className="text-lg">No messages yet</p>
             <p className="text-sm">Start a conversation with someone!</p>
           </div>
@@ -163,7 +163,7 @@ export default function MessagesPage() {
               key={conversation.id}
               href={`/messages/${conversation.id}`}
               onClick={() => markAsRead(conversation.id)}
-              className="flex items-center p-4 border-b hover:bg-gray-50"
+              className="flex items-center p-4 border-b hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <div className="relative">
                 <Image
@@ -174,17 +174,17 @@ export default function MessagesPage() {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 {conversation.unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-600 dark:bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-md">
                     {conversation.unreadCount}
                   </span>
                 )}
               </div>
               <div className="ml-3 flex-1 min-w-0">
                 <div className="flex justify-between items-baseline">
-                  <h2 className="font-semibold truncate">
+                  <h2 className="font-semibold truncate text-gray-900 dark:text-gray-50">
                     {conversation.otherUser.displayName}
                   </h2>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-300 font-medium">
                     {conversation.lastMessageTime
                       ? new Date(
                           conversation.lastMessageTime.toDate()
@@ -195,7 +195,7 @@ export default function MessagesPage() {
                       : ""}
                   </span>
                 </div>
-                <p className="text-gray-600 truncate">
+                <p className="text-gray-700 dark:text-gray-300 truncate">
                   {conversation.lastMessage
                     ? conversation.lastMessage.split(" ").slice(0, 20).join(" ") +
                       (conversation.lastMessage.split(" ").length > 20 ? "..." : "")

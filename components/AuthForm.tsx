@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { auth, db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -10,6 +10,7 @@ import {
   browserLocalPersistence,
   onAuthStateChanged,
   User as FirebaseUser,
+  signOut,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import type { FirebaseError } from "firebase/app";
@@ -29,26 +30,26 @@ export default function AuthForm() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
 
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Monitor auth state
+  // Persist user and redirect if already logged in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
 
-        // Check if setup is completed
         const setupSnap = await getDoc(doc(db, "setupStatus", firebaseUser.uid));
         if (!setupSnap.exists()) {
           router.replace("/setup");
-        } else {
-          router.replace("/");
+        } else if (pathname === "/auth") {
+          router.replace("/"); // redirect logged-in users away from auth page
         }
       } else {
         setUser(null);
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, pathname]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,13 +70,12 @@ export default function AuthForm() {
           return;
         }
 
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, password);
 
-        // Save security question & answer keyed by email (testing only)
         await setDoc(doc(db, "securityQuestions", email), {
           question: securityQuestion,
           answer: securityAnswer,
-          password, // Plaintext for testing. Never use in production.
+          password, // For testing only. Never store plaintext in production
         });
 
         setSuccess("Account created! Redirecting to setup...");
@@ -89,6 +89,7 @@ export default function AuthForm() {
           return;
         }
 
+        // Persist login until manual logout
         await setPersistence(auth, browserLocalPersistence);
         await signInWithEmailAndPassword(auth, email, password);
 
@@ -133,9 +134,15 @@ export default function AuthForm() {
     }
   };
 
+  // Optional manual logout function
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/"); // redirect to home page
+  };
+
   return (
-    <div className="p-4 border rounded-md max-w-sm mx-auto">
-      <h2 className="text-xl font-bold mb-4 text-center">
+    <div className="p-4 border rounded-md max-w-sm mx-auto bg-white dark:bg-gray-800 shadow-md transition-colors duration-200">
+      <h2 className="text-xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">
         {mode === "login" ? "Login" : mode === "signup" ? "Sign Up" : "Forgot Password"}
       </h2>
 
@@ -146,7 +153,7 @@ export default function AuthForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
-          className="w-full p-2 border rounded mb-3"
+          className="w-full p-2 border rounded mb-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
           required
         />
 
@@ -158,14 +165,14 @@ export default function AuthForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
               required
               minLength={6}
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-2 top-2 text-sm text-gray-600"
+              className="absolute right-2 top-2 text-sm text-gray-600 dark:text-gray-300"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
@@ -180,7 +187,7 @@ export default function AuthForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
-              className="w-full p-2 border rounded mb-3"
+              className="w-full p-2 border rounded mb-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
               required
               minLength={6}
             />
@@ -190,7 +197,7 @@ export default function AuthForm() {
               value={securityQuestion}
               onChange={(e) => setSecurityQuestion(e.target.value)}
               disabled={loading}
-              className="w-full p-2 border rounded mb-3"
+              className="w-full p-2 border rounded mb-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
               required
             />
             <input
@@ -199,7 +206,7 @@ export default function AuthForm() {
               value={securityAnswer}
               onChange={(e) => setSecurityAnswer(e.target.value)}
               disabled={loading}
-              className="w-full p-2 border rounded mb-3"
+              className="w-full p-2 border rounded mb-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
               required
             />
           </>
@@ -212,18 +219,18 @@ export default function AuthForm() {
             value={securityAnswer}
             onChange={(e) => setSecurityAnswer(e.target.value)}
             disabled={loading}
-            className="w-full p-2 border rounded mb-3"
+            className="w-full p-2 border rounded mb-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600"
             required
           />
         )}
 
-        {error && <div className="p-2 mb-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
-        {success && <div className="p-2 mb-3 bg-green-100 text-green-700 rounded text-sm">{success}</div>}
+        {error && <div className="p-2 mb-3 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 rounded text-sm">{error}</div>}
+        {success && <div className="p-2 mb-3 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 rounded text-sm">{success}</div>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 bg-blue-600 text-white rounded mb-3 disabled:opacity-50"
+          className="w-full py-2 bg-blue-600 dark:bg-blue-700 text-white rounded mb-3 disabled:opacity-50 transition-colors duration-200"
         >
           {loading
             ? "Processing..."
@@ -243,7 +250,7 @@ export default function AuthForm() {
                 setError(null);
                 setSuccess(null);
               }}
-              className="text-red-600 text-sm mb-2 block"
+              className="text-red-600 dark:text-red-400 text-sm mb-2 block"
             >
               Forgot Password?
             </button>
@@ -256,7 +263,7 @@ export default function AuthForm() {
               setError(null);
               setSuccess(null);
             }}
-            className="text-blue-600 text-sm"
+            className="text-blue-600 dark:text-blue-400 text-sm"
           >
             {mode === "login" ? "Need an account? Sign Up" : "Back to Login"}
           </button>

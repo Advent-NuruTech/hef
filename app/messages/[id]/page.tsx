@@ -43,7 +43,7 @@ interface Message {
   senderPhotoURL?: string;
 }
 
-// Function to detect URLs and convert them to clickable links
+// Convert URLs in message text to clickable links
 const detectLinks = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.split(urlRegex).map((part, index) => {
@@ -54,7 +54,7 @@ const detectLinks = (text: string) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-300 hover:underline"
+          className="text-blue-500 dark:text-blue-400 hover:underline"
         >
           {part}
         </a>
@@ -70,7 +70,7 @@ export default function MessagePage() {
   const [text, setText] = useState("");
   const [receiver, setReceiver] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
+
   const [isSending, setIsSending] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -78,11 +78,10 @@ export default function MessagePage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  // scroll to bottom
+  // Scroll to bottom on new messages
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
-
   useEffect(() => scrollToBottom(), [messages, scrollToBottom]);
 
   useEffect(() => {
@@ -103,7 +102,7 @@ export default function MessagePage() {
       ? receiverId[0]
       : receiverId ?? "";
 
-    // 🔥 Fetch receiver profile
+    // Fetch receiver profile
     const unsubReceiver = onSnapshot(
       doc(db, "users", receiverUid),
       (docSnap) => {
@@ -118,16 +117,16 @@ export default function MessagePage() {
         } else {
           setReceiver(null);
         }
-        
       }
     );
 
-    // 🔥 Fetch messages with attached sender profiles
+    // Fetch messages
     const q = query(
       collection(db, "messages"),
       where("participants", "array-contains", user.uid),
       orderBy("createdAt", "asc")
     );
+
     const unsubMessages = onSnapshot(q, async (snap) => {
       const msgs: Message[] = [];
 
@@ -168,7 +167,6 @@ export default function MessagePage() {
     };
   }, [receiverId, router]);
 
-  // send message
   const sendMessage = async () => {
     if (!text.trim() || !currentUser || !receiver || isSending) return;
 
@@ -189,7 +187,6 @@ export default function MessagePage() {
     }
   };
 
-  // edit message
   const startEditing = (message: Message) => {
     if (message.senderId !== currentUser?.uid) return;
     setEditingMessageId(message.id);
@@ -203,7 +200,6 @@ export default function MessagePage() {
 
   const saveEditedMessage = async () => {
     if (!editingMessageId || !editText.trim()) return;
-
     try {
       const messageRef = doc(db, "messages", editingMessageId);
       await updateDoc(messageRef, {
@@ -217,10 +213,8 @@ export default function MessagePage() {
     }
   };
 
-  // delete message
   const deleteMessage = async (messageId: string) => {
     if (!window.confirm("Are you sure you want to delete this message?")) return;
-
     try {
       await deleteDoc(doc(db, "messages", messageId));
     } catch (error) {
@@ -228,7 +222,6 @@ export default function MessagePage() {
     }
   };
 
-  // Handle key press for sending message
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -237,9 +230,9 @@ export default function MessagePage() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Floating Header - removed shadow */}
-      <div className="sticky top-0 z-10 flex items-center gap-2 p-4 border-b bg-white">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      {/* Header */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 p-4 border-b bg-white dark:bg-black">
         {receiver && (
           <>
             <Image
@@ -249,7 +242,9 @@ export default function MessagePage() {
               height={32}
               className="w-8 h-8 rounded-full object-cover"
             />
-            <span className="font-semibold">{receiver.displayName}</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {receiver.displayName}
+            </span>
           </>
         )}
       </div>
@@ -275,10 +270,10 @@ export default function MessagePage() {
               </Link>
             )}
             <div
-              className={`relative group p-2 rounded-lg max-w-xs ${
+              className={`relative group p-2 rounded-lg max-w-xs break-words ${
                 m.senderId === currentUser?.uid
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-blue-500 text-white dark:bg-blue-600"
+                  : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
               }`}
             >
               {editingMessageId === m.id ? (
@@ -286,7 +281,7 @@ export default function MessagePage() {
                   <input
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="text-gray-800 p-1 rounded"
+                    className="text-gray-900 dark:text-gray-100 p-1 rounded bg-gray-200 dark:bg-gray-700 focus:outline-none"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter") saveEditedMessage();
@@ -294,16 +289,10 @@ export default function MessagePage() {
                     }}
                   />
                   <div className="flex justify-end gap-2 mt-2">
-                    <button
-                      onClick={cancelEditing}
-                      className="p-1 rounded-full hover:bg-gray-200"
-                    >
+                    <button className="p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600" onClick={cancelEditing}>
                       <FiX size={16} />
                     </button>
-                    <button
-                      onClick={saveEditedMessage}
-                      className="p-1 rounded-full hover:bg-gray-200"
-                    >
+                    <button className="p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600" onClick={saveEditedMessage}>
                       <FiCheck size={16} />
                     </button>
                   </div>
@@ -311,24 +300,24 @@ export default function MessagePage() {
               ) : (
                 <>
                   <p>{detectLinks(m.text)}</p>
-                  {m.edited && (
-                    <span className="text-xs opacity-70 ml-1">(edited)</span>
-                  )}
+                  {m.edited && <span className="text-xs opacity-70 ml-1">(edited)</span>}
                 </>
               )}
 
-              {/* Message actions (only for current user's messages) - always visible for sender */}
+              {/* Edit/Delete buttons */}
               {m.senderId === currentUser?.uid && editingMessageId !== m.id && (
-                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 flex gap-1">
+                <div className="absolute -right-10 top-1/2 transform -translate-y-1/2 flex flex-col gap-1">
                   <button
                     onClick={() => startEditing(m)}
-                    className="p-1 rounded-full hover:bg-gray-200 opacity-80 hover:opacity-100"
+                    className="p-1 rounded-full hover:bg-yellow-300 dark:hover:bg-yellow-500 text-yellow-700 dark:text-yellow-100"
+                    title="Edit"
                   >
                     <FiEdit2 size={14} />
                   </button>
                   <button
                     onClick={() => deleteMessage(m.id)}
-                    className="p-1 rounded-full hover:bg-gray-200 opacity-80 hover:opacity-100"
+                    className="p-1 rounded-full hover:bg-red-300 dark:hover:bg-red-600 text-red-700 dark:text-red-100"
+                    title="Delete"
                   >
                     <FiTrash2 size={14} />
                   </button>
@@ -340,21 +329,21 @@ export default function MessagePage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input - removed focus ring */}
-      <div className="p-3 border-t flex gap-2 items-center">
+      {/* Input */}
+      <div className="p-3 border-t flex gap-2 items-center bg-gray-50 dark:bg-gray-800">
         <input
           ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
-          className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-0"
+          className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           disabled={isSending}
         />
         <button
           onClick={sendMessage}
           disabled={!text.trim() || isSending}
-          className="bg-blue-500 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
+          className="bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
         >
           {isSending ? (
             <span className="flex items-center">
