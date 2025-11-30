@@ -22,8 +22,8 @@ export default function Footer() {
   ];
 
   const contactInfo = [
-    { icon: FaEnvelope, label: "contact@youngevangelists.org", href: "" },
-    { icon: FaPhone, label: "+254 700 000 000", href: "tel:+254759167209" },
+    { icon: FaEnvelope, label: "youngevengelistsministry@gmail.com"},
+    { icon: FaPhone, label: "call us", href: "tel:+254759167209" },
     { icon: FaMapMarkerAlt, label: "Kenya" }, 
   ];
 
@@ -69,7 +69,7 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex gap-4">
               <a
-                href=""
+                href="https://facebook.com/groups/1706457559938208/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -78,7 +78,7 @@ export default function Footer() {
                 <FaFacebook className="text-xl" />
               </a>
               <a
-                href=""
+                href="https://youtube.com/@youngevangelistsministry8232?si=kKR1Xs3Cy4BWpVDK"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
