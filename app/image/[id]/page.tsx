@@ -52,7 +52,6 @@ export default function ImagePage() {
       const ref = doc(db, "hefGallery", id as string);
       const snap = await getDoc(ref);
       if (snap.exists()) {
-        // ✅ Cast data to Item
         const data = snap.data() as Omit<Item, "id">;
         setImage({ id: snap.id, ...data });
       }
@@ -74,7 +73,6 @@ export default function ImagePage() {
         let userName = "Unknown";
         let userPhoto = "/default-avatar.png";
 
-        // Fetch user profile
         if (data.userId) {
           const userRef = doc(db, "users", data.userId);
           const userSnap = await getDoc(userRef);
@@ -115,7 +113,8 @@ export default function ImagePage() {
     <div className="max-w-3xl mx-auto p-4">
       {image && (
         <>
-          <div className="bg-white rounded shadow p-4">
+          {/* Image Card */}
+          <div className="bg-white dark:bg-gray-800 rounded shadow p-4">
             <Image
               src={image.url}
               alt={image.title || "image"}
@@ -123,20 +122,25 @@ export default function ImagePage() {
               height={600}
               className="w-full h-auto rounded"
             />
-            <h1 className="text-xl font-semibold mt-3">{image.title}</h1>
-            <p className="text-gray-600">{image.description}</p>
+            <h1 className="text-xl font-semibold mt-3 text-gray-900 dark:text-gray-100">
+              {image.title}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">{image.description}</p>
           </div>
 
           {/* Comments Section */}
           <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-3">
+            <h2 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
               Comments ({comments.length})
             </h2>
 
             {/* Comment List */}
             <div className="space-y-4">
               {comments.map((c) => (
-                <div key={c.id} className="flex items-start gap-3">
+                <div
+                  key={c.id}
+                  className="flex items-start gap-3 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg"
+                >
                   <Link href={`/users/${c.userId}`}>
                     <Image
                       src={c.userPhoto || "/default-avatar.png"}
@@ -149,11 +153,11 @@ export default function ImagePage() {
                   <div>
                     <Link
                       href={`/users/${c.userId}`}
-                      className="font-medium hover:underline"
+                      className="font-medium text-gray-900 dark:text-gray-100 hover:underline"
                     >
                       {c.userName}
                     </Link>
-                    <p className="text-gray-700">{c.text}</p>
+                    <p className="text-gray-700 dark:text-gray-200 mt-1">{c.text}</p>
                   </div>
                 </div>
               ))}
@@ -166,11 +170,11 @@ export default function ImagePage() {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
-                className="flex-1 border rounded p-2"
+                className="flex-1 border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               />
               <button
                 onClick={postComment}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded"
               >
                 Post
               </button>
