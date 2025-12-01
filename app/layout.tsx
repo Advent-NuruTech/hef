@@ -4,9 +4,9 @@ import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
-  title: "Young Evangelists Ministry | OLD SDA CHURCH",
+  title: "Young Evangelists Ministry",
   description:
-    "Official website of the Young Evangelists Ministry – a dynamic mission team dedicated to restoring the old foundations, uplifting truth, and preparing a people ready for the Lord’s return.",
+    "Young Evangelists Ministry – a dynamic mission team dedicated to restoring the old foundations, restoring the kowledge of one True God ,uplifting truth, and preparing a people ready for the Lord’s return.",
   icons: {
     icon: "/favicon.ico", // ✅ Using your logo
     shortcut: "/favicon.ico",
@@ -15,9 +15,9 @@ export const metadata = {
   openGraph: {
     type: "website",
     url: "https://yourwebsite.com",
-    title: "Young Evangelists Ministry | OLD SDA CHURCH",
+    title: "Young Evangelists MinistrY",
     description:
-      "Official website of the Young Evangelists Ministry – restoring old foundations and preparing a people ready for the Lord’s return.",
+      "Restoring old foundations and preparing a people ready for the Lord’s return.",
     images: [
       {
         url: "/favicon.ico",
@@ -29,9 +29,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Young Evangelists Ministry | OLD SDA CHURCH",
+    title: "Young Evangelists Ministr",
     description:
-      "Official website of the Young Evangelists Ministry – restoring old foundations and preparing a people ready for the Lord’s return.",
+      "Restoring old foundations and preparing a people ready for the Lord’s return.",
     images: ["/favicon.ico"],
   },
   themeColor: "#1f2937",

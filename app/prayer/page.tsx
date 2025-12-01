@@ -93,7 +93,7 @@ export default function PrayerPage() {
                   transition={{ delay: 0.4 }}
                   className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
                 >
-                  Share your heart with us. We're here to pray with you and support you through faith.
+                  Share your heart with us. We&apos;re here to pray with you and support you through faith.
                 </motion.p>
 
                 <motion.div
@@ -129,7 +129,7 @@ export default function PrayerPage() {
                     <FaPrayingHands className="text-8xl text-blue-600" />
                   </div>
                   <p className="relative italic text-blue-900 dark:text-blue-200 font-medium text-lg leading-relaxed">
-                    "The effectual fervent prayer of a righteous man availeth much."
+                    &ldquo;The effectual fervent prayer of a righteous man availeth much.&rdquo;
                   </p>
                   <p className="relative text-blue-700 dark:text-blue-400 font-semibold mt-2">
                     — James 5:16
