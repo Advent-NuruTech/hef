@@ -22,6 +22,7 @@ export default function ManagementPage() {
     { name: "Upload Youtube video", href: "/upload-video" },
     { name: "Manage Events", href: "/events/manage" },
     { name: "Prayer Requests", href: "/prayer/received-prayer" },
+        { name: "Reviews", href: "/review/received" },
 
 
   ]);
